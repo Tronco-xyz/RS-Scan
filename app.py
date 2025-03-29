@@ -43,19 +43,19 @@ if st.button("🔍 Ejecutar Screener"):
             st.error("No se pudieron descargar datos del resto de los tickers.")
             st.stop()
 
-        # ✅ Manejo robusto de los datos descargados
+        # ✅ Manejo robusto dependiendo del número de tickers
         if isinstance(data_download.columns, pd.MultiIndex):
+            # Caso de múltiples tickers con MultiIndex
             if "Adj Close" in data_download.columns.levels[0]:
                 data = data_download["Adj Close"]
             else:
                 st.error("No se encontró 'Adj Close' en los datos descargados.")
+                st.write("Columnas recibidas:", data_download.columns.levels[0].tolist())
                 st.stop()
         elif isinstance(data_download, pd.DataFrame):
-            if "Adj Close" in data_download.columns:
-                data = data_download["Adj Close"]
-            else:
-                st.error("'Adj Close' no está en columnas simples del DataFrame.")
-                st.stop()
+            # Caso de solo un ticker, columnas simples
+            data = data_download[["Adj Close"]]
+            data.columns = [all_tickers[0]]  # renombrar columna con nombre del ticker
         elif isinstance(data_download, pd.Series):
             data = data_download.to_frame(name=all_tickers[0])
         else:
