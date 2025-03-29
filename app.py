@@ -9,7 +9,7 @@ st.set_page_config(page_title="RS Rating Screener", layout="wide")
 st.title("📊 RS Rating Screener (Relative Strength vs S&P 500)")
 
 # --- Configuraciones iniciales ---
-BENCHMARK = "^GSPC"
+BENCHMARK = "SPY"  # Usamos SPY en lugar de ^GSPC por mayor estabilidad
 PERIOD = "1y"
 INTERVAL = "1d"
 
@@ -33,6 +33,14 @@ if st.button("🔍 Ejecutar Screener"):
 
     # Descargar precios ajustados de cierre
     data = yf.download(all_tickers, period=PERIOD, interval=INTERVAL)["Adj Close"]
+
+    if data.empty or BENCHMARK not in data.columns:
+        st.error(f"No se pudieron descargar datos válidos. Asegúrate de que el benchmark ({BENCHMARK}) esté disponible.")
+        st.stop()
+
+    # Forzar a DataFrame si solo un ticker
+    if isinstance(data, pd.Series):
+        data = data.to_frame()
 
     # Benchmark separado
     benchmark = data[BENCHMARK]
@@ -61,9 +69,12 @@ if st.button("🔍 Ejecutar Screener"):
     for ticker in data.columns:
         if ticker == BENCHMARK:
             continue
-        rs = calc_rs_score(data[ticker], benchmark)
-        rs_scores[ticker] = rs.iloc[-1]
-        new_high_flags[ticker] = rs.iloc[-1] >= rs.max()
+        try:
+            rs = calc_rs_score(data[ticker], benchmark)
+            rs_scores[ticker] = rs.iloc[-1]
+            new_high_flags[ticker] = rs.iloc[-1] >= rs.max()
+        except Exception as e:
+            st.warning(f"No se pudo calcular RS para {ticker}: {e}")
 
     # Convertir a DataFrame
     df_rs = pd.DataFrame.from_dict(rs_scores, orient="index", columns=["RS_Score"])
