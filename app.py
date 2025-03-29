@@ -100,7 +100,12 @@ if st.button("🔍 Ejecutar Screener"):
             stock = data[ticker].copy()
             stock.index = stock.index.tz_localize(None)
             st.write(f"⏳ Verificando {ticker}...", stock.tail())
-            rs = calc_rs_score(stock, benchmark)
+
+            combined = pd.concat([stock, benchmark], axis=1, join='inner').dropna()
+            stock_aligned = combined.iloc[:, 0]
+            bench_aligned = combined.iloc[:, 1]
+            rs = calc_rs_score(stock_aligned, bench_aligned)
+
             st.write(f"📈 RS calculado para {ticker}:", rs.tail())
 
             if rs.dropna().shape[0] < 100:
