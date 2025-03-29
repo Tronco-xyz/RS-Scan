@@ -38,13 +38,18 @@ if st.button("🔍 Ejecutar Screener"):
             benchmark_data = benchmark_download.iloc[:, 0]  # Fallback a la primera columna
 
         # Descargar datos del resto de tickers
-        data = yf.download(all_tickers, period=PERIOD, interval=INTERVAL)["Adj Close"]
-        if data.empty:
+        data_download = yf.download(all_tickers, period=PERIOD, interval=INTERVAL)
+        if data_download.empty:
             st.error("No se pudieron descargar datos del resto de los tickers.")
             st.stop()
 
-        if isinstance(data, pd.Series):
-            data = data.to_frame()
+        if isinstance(data_download, pd.DataFrame) and "Adj Close" in data_download.columns:
+            data = data_download["Adj Close"]
+        elif isinstance(data_download, pd.Series):
+            data = data_download.to_frame(name=all_tickers[0])
+        else:
+            st.error("Los datos descargados no tienen formato esperado ('Adj Close')")
+            st.stop()
 
     except Exception as e:
         st.error(f"Error al descargar datos: {e}")
