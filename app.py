@@ -46,7 +46,6 @@ if st.button("🔍 Ejecutar Screener"):
 
         # ✅ Manejo robusto dependiendo del número de tickers
         if isinstance(data_download.columns, pd.MultiIndex):
-            # Caso de múltiples tickers con MultiIndex
             if "Close" in data_download.columns.levels[0]:
                 data = data_download["Close"]
             else:
@@ -54,9 +53,8 @@ if st.button("🔍 Ejecutar Screener"):
                 st.write("Columnas recibidas:", data_download.columns.levels[0].tolist())
                 st.stop()
         elif isinstance(data_download, pd.DataFrame):
-            # Caso de solo un ticker, columnas simples
             data = data_download[["Close"]]
-            data.columns = [all_tickers[0]]  # renombrar columna con nombre del ticker
+            data.columns = [all_tickers[0]]
         elif isinstance(data_download, pd.Series):
             data = data_download.to_frame(name=all_tickers[0])
         else:
@@ -102,7 +100,7 @@ if st.button("🔍 Ejecutar Screener"):
                 failed_tickers.append(ticker)
                 continue
             rs_scores[ticker] = score
-            new_high_flags[ticker] = score >= rs.max()
+            new_high_flags[ticker] = bool(score >= rs.max(skipna=True))
         except Exception as e:
             failed_tickers.append(ticker)
             st.warning(f"No se pudo calcular RS para {ticker}: {e}")
