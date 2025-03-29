@@ -31,16 +31,26 @@ all_tickers = list(set(nasdaq_100 + custom_tickers + [BENCHMARK]))
 if st.button("🔍 Ejecutar Screener"):
     st.info("Descargando datos y calculando RS Rating... Esto puede tardar unos segundos ⏳")
 
-    # Descargar precios ajustados de cierre
-    data = yf.download(all_tickers, period=PERIOD, interval=INTERVAL)["Adj Close"]
+    try:
+        # Descargar precios ajustados de cierre
+        data = yf.download(all_tickers, period=PERIOD, interval=INTERVAL)["Adj Close"]
 
-    if data.empty or BENCHMARK not in data.columns:
-        st.error(f"No se pudieron descargar datos válidos. Asegúrate de que el benchmark ({BENCHMARK}) esté disponible.")
+        if data.empty:
+            st.error("No se pudieron descargar datos. La respuesta de Yahoo Finance está vacía.")
+            st.stop()
+
+        if BENCHMARK not in data.columns:
+            st.error(f"El benchmark ({BENCHMARK}) no se encuentra en los datos descargados.")
+            st.write("Tickers disponibles:", list(data.columns))
+            st.stop()
+
+        # Forzar a DataFrame si solo un ticker
+        if isinstance(data, pd.Series):
+            data = data.to_frame()
+
+    except Exception as e:
+        st.error(f"Error al descargar datos: {e}")
         st.stop()
-
-    # Forzar a DataFrame si solo un ticker
-    if isinstance(data, pd.Series):
-        data = data.to_frame()
 
     # Benchmark separado
     benchmark = data[BENCHMARK]
