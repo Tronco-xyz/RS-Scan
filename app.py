@@ -43,12 +43,14 @@ if st.button("🔍 Ejecutar Screener"):
             st.error("No se pudieron descargar datos del resto de los tickers.")
             st.stop()
 
-        if isinstance(data_download, pd.DataFrame) and "Adj Close" in data_download.columns:
+        if isinstance(data_download.columns, pd.MultiIndex):
+            data = data_download["Adj Close"]
+        elif "Adj Close" in data_download.columns:
             data = data_download["Adj Close"]
         elif isinstance(data_download, pd.Series):
             data = data_download.to_frame(name=all_tickers[0])
         else:
-            st.error("Los datos descargados no tienen formato esperado ('Adj Close')")
+            st.error("Los datos descargados no tienen formato esperado ('Adj Close').")
             st.stop()
 
     except Exception as e:
