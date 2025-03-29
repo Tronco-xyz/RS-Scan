@@ -70,6 +70,7 @@ if st.button("🔍 Ejecutar Screener"):
     st.write("Tickers descargados:", list(data.columns))
 
     benchmark = benchmark_data.squeeze()
+    benchmark.index = benchmark.index.tz_localize(None)
 
     def calc_rs_score(stock, benchmark):
         perf_63 = stock / stock.shift(63)
@@ -96,8 +97,10 @@ if st.button("🔍 Ejecutar Screener"):
         try:
             valid_count = data[ticker].count()
             st.write(f"📊 {ticker} tiene {valid_count} valores válidos de precio.")
-            st.write(f"⏳ Verificando {ticker}...", data[ticker].tail())
-            rs = calc_rs_score(data[ticker], benchmark)
+            stock = data[ticker].copy()
+            stock.index = stock.index.tz_localize(None)
+            st.write(f"⏳ Verificando {ticker}...", stock.tail())
+            rs = calc_rs_score(stock, benchmark)
             st.write(f"📈 RS calculado para {ticker}:", rs.tail())
 
             if rs.dropna().shape[0] < 100:
