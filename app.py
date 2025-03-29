@@ -14,15 +14,8 @@ BENCHMARK = "SPY"
 PERIOD = "1y"
 INTERVAL = "1d"
 
-# Lista base: Nasdaq 100
-nasdaq_100 = [
-    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "PEP", "AVGO", "COST",
-    "CSCO", "TMUS", "TXN", "ADBE", "QCOM", "AMGN", "INTU", "HON", "INTC", "SBUX",
-    "VRTX", "ADI", "ISRG", "MDLZ", "GILD", "REGN", "FISV", "BKNG", "LRCX", "ADP",
-    "PDD", "PANW", "CDNS", "MU", "ASML", "KDP", "CSGP", "MNST", "MELI", "CHTR",
-    "AEP", "IDXX", "ORLY", "ROST", "PAYX", "CTAS", "MRNA", "CRWD", "MAR", "FTNT",
-    "DLTR", "ODFL", "EXC", "WBA", "LCID", "BIIB", "AZN", "TEAM", "ZM", "SIRI"
-]
+# Subconjunto más pequeño de tickers para pruebas
+nasdaq_100 = ["AAPL", "MSFT", "AMZN", "NVDA", "META"]
 
 # --- UI ---
 user_tickers = st.text_input("Agrega tickers adicionales separados por coma (opcional):")
@@ -57,9 +50,9 @@ if st.button("🔍 Ejecutar Screener"):
         st.error(f"Error al descargar datos: {e}")
         st.stop()
 
-    # Mostrar shape de los datos descargados
     st.write("Datos del benchmark:", benchmark_data.shape)
     st.write("Datos de los tickers:", data.shape)
+    st.write("Tickers descargados:", list(data.columns))
 
     benchmark = benchmark_data
 
