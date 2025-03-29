@@ -87,6 +87,7 @@ if st.button("🔍 Ejecutar Screener"):
         rs_bench = 0.4 * bench_63 + 0.2 * bench_126 + 0.2 * bench_189 + 0.2 * bench_252
 
         rs_score = (rs_stock / rs_bench) * 100
+        rs_score = rs_score.iloc[252:]  # Elimina los primeros valores NaN por shift
         return rs_score
 
     rs_scores = {}
@@ -151,3 +152,4 @@ if st.button("🔍 Ejecutar Screener"):
 
     csv = df_rs.to_csv().encode("utf-8")
     st.download_button("📥 Descargar CSV completo", data=csv, file_name="rs_rating_screener.csv", mime="text/csv")
+    
