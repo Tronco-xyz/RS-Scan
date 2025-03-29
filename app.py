@@ -94,6 +94,8 @@ if st.button("🔍 Ejecutar Screener"):
 
     for ticker in data.columns:
         try:
+            valid_count = data[ticker].count()
+            st.write(f"📊 {ticker} tiene {valid_count} valores válidos de precio.")
             st.write(f"⏳ Verificando {ticker}...", data[ticker].tail())
             rs = calc_rs_score(data[ticker], benchmark)
             st.write(f"📈 RS calculado para {ticker}:", rs.tail())
