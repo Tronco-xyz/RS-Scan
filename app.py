@@ -33,10 +33,16 @@ if st.button("🔍 Ejecutar Screener"):
 
     try:
         # Descargar datos del benchmark SPY por separado
-        benchmark_data = yf.download(BENCHMARK, period=PERIOD, interval=INTERVAL)["Adj Close"]
-        if benchmark_data.empty:
+        benchmark_download = yf.download(BENCHMARK, period=PERIOD, interval=INTERVAL)
+        if benchmark_download.empty:
             st.error(f"No se pudieron obtener datos del benchmark ({BENCHMARK})")
             st.stop()
+
+        # Manejar el caso donde benchmark devuelve una Serie o un solo DataFrame
+        if "Adj Close" in benchmark_download.columns:
+            benchmark_data = benchmark_download["Adj Close"]
+        else:
+            benchmark_data = benchmark_download.iloc[:, 0]  # Fallback a la primera columna
 
         # Descargar datos del resto de tickers
         data = yf.download(all_tickers, period=PERIOD, interval=INTERVAL)["Adj Close"]
@@ -44,7 +50,6 @@ if st.button("🔍 Ejecutar Screener"):
             st.error("No se pudieron descargar datos del resto de los tickers.")
             st.stop()
 
-        # Forzar a DataFrame si es Series
         if isinstance(data, pd.Series):
             data = data.to_frame()
 
