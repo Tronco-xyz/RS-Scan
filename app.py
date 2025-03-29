@@ -32,10 +32,11 @@ if st.button("🔍 Ejecutar Screener"):
             st.error(f"No se pudieron obtener datos del benchmark ({BENCHMARK})")
             st.stop()
 
-        if "Adj Close" in benchmark_download.columns:
-            benchmark_data = benchmark_download["Adj Close"]
+        if "Close" in benchmark_download.columns:
+            benchmark_data = benchmark_download["Close"]
         else:
-            benchmark_data = benchmark_download.iloc[:, 0]  # Fallback a la primera columna
+            st.error("No se encontró 'Close' en el benchmark descargado.")
+            st.stop()
 
         # Descargar datos del resto de tickers
         data_download = yf.download(all_tickers, period=PERIOD, interval=INTERVAL)
@@ -46,15 +47,15 @@ if st.button("🔍 Ejecutar Screener"):
         # ✅ Manejo robusto dependiendo del número de tickers
         if isinstance(data_download.columns, pd.MultiIndex):
             # Caso de múltiples tickers con MultiIndex
-            if "Adj Close" in data_download.columns.levels[0]:
-                data = data_download["Adj Close"]
+            if "Close" in data_download.columns.levels[0]:
+                data = data_download["Close"]
             else:
-                st.error("No se encontró 'Adj Close' en los datos descargados.")
+                st.error("No se encontró 'Close' en los datos descargados.")
                 st.write("Columnas recibidas:", data_download.columns.levels[0].tolist())
                 st.stop()
         elif isinstance(data_download, pd.DataFrame):
             # Caso de solo un ticker, columnas simples
-            data = data_download[["Adj Close"]]
+            data = data_download[["Close"]]
             data.columns = [all_tickers[0]]  # renombrar columna con nombre del ticker
         elif isinstance(data_download, pd.Series):
             data = data_download.to_frame(name=all_tickers[0])
@@ -129,3 +130,4 @@ if st.button("🔍 Ejecutar Screener"):
 
     csv = df_rs.to_csv().encode("utf-8")
     st.download_button("📥 Descargar CSV completo", data=csv, file_name="rs_rating_screener.csv", mime="text/csv")
+
