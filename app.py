@@ -100,8 +100,10 @@ if st.button("🔍 Ejecutar Screener"):
                 failed_tickers.append(ticker)
                 continue
             rs_scores[ticker] = score
-            is_new_high = rs.iloc[-1] >= rs[-252:].max(skipna=True)
-            new_high_flags[ticker] = bool(is_new_high)
+            last_value = rs.iloc[-1]
+            max_value = rs[-252:].max(skipna=True)
+            is_new_high = bool(last_value >= max_value)
+            new_high_flags[ticker] = is_new_high
         except Exception as e:
             failed_tickers.append(ticker)
             st.warning(f"No se pudo calcular RS para {ticker}: {e}")
