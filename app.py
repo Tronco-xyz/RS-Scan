@@ -9,7 +9,7 @@ st.set_page_config(page_title="RS Rating Screener", layout="wide")
 st.title("📊 RS Rating Screener (Relative Strength vs S&P 500)")
 
 # --- Configuraciones iniciales ---
-BENCHMARK = "SPY"  # Usamos SPY en lugar de ^GSPC por mayor estabilidad
+BENCHMARK = "SPY"
 PERIOD = "1y"
 INTERVAL = "1d"
 
@@ -26,25 +26,25 @@ nasdaq_100 = [
 # --- UI ---
 user_tickers = st.text_input("Agrega tickers adicionales separados por coma (opcional):")
 custom_tickers = [x.strip().upper() for x in user_tickers.split(",") if x.strip() != ""]
-all_tickers = list(set(nasdaq_100 + custom_tickers + [BENCHMARK]))
+all_tickers = list(set(nasdaq_100 + custom_tickers))  # SPY se descarga aparte
 
 if st.button("🔍 Ejecutar Screener"):
     st.info("Descargando datos y calculando RS Rating... Esto puede tardar unos segundos ⏳")
 
     try:
-        # Descargar precios ajustados de cierre
+        # Descargar datos del benchmark SPY por separado
+        benchmark_data = yf.download(BENCHMARK, period=PERIOD, interval=INTERVAL)["Adj Close"]
+        if benchmark_data.empty:
+            st.error(f"No se pudieron obtener datos del benchmark ({BENCHMARK})")
+            st.stop()
+
+        # Descargar datos del resto de tickers
         data = yf.download(all_tickers, period=PERIOD, interval=INTERVAL)["Adj Close"]
-
         if data.empty:
-            st.error("No se pudieron descargar datos. La respuesta de Yahoo Finance está vacía.")
+            st.error("No se pudieron descargar datos del resto de los tickers.")
             st.stop()
 
-        if BENCHMARK not in data.columns:
-            st.error(f"El benchmark ({BENCHMARK}) no se encuentra en los datos descargados.")
-            st.write("Tickers disponibles:", list(data.columns))
-            st.stop()
-
-        # Forzar a DataFrame si solo un ticker
+        # Forzar a DataFrame si es Series
         if isinstance(data, pd.Series):
             data = data.to_frame()
 
@@ -53,7 +53,7 @@ if st.button("🔍 Ejecutar Screener"):
         st.stop()
 
     # Benchmark separado
-    benchmark = data[BENCHMARK]
+    benchmark = benchmark_data
 
     # Función para calcular RS Score
     def calc_rs_score(stock, benchmark):
@@ -77,8 +77,6 @@ if st.button("🔍 Ejecutar Screener"):
     rs_scores = {}
     new_high_flags = {}
     for ticker in data.columns:
-        if ticker == BENCHMARK:
-            continue
         try:
             rs = calc_rs_score(data[ticker], benchmark)
             rs_scores[ticker] = rs.iloc[-1]
