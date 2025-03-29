@@ -97,10 +97,18 @@ if st.button("🔍 Ejecutar Screener"):
             st.write(f"⏳ Verificando {ticker}...", data[ticker].tail())
             rs = calc_rs_score(data[ticker], benchmark)
             st.write(f"📈 RS calculado para {ticker}:", rs.tail())
-            score = rs.iloc[-1]
-            if pd.isna(score):
+
+            if rs.dropna().shape[0] < 100:
+                st.warning(f"{ticker} tiene menos de 100 días válidos para RS.")
                 failed_tickers.append(ticker)
                 continue
+
+            score = rs.iloc[-1]
+            if pd.isna(score):
+                st.warning(f"{ticker} tiene RS final NaN.")
+                failed_tickers.append(ticker)
+                continue
+
             rs_scores[ticker] = score
             last_value = rs.iloc[-1]
             max_value = rs[-252:].max(skipna=True)
