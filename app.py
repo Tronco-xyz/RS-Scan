@@ -94,7 +94,9 @@ if st.button("🔍 Ejecutar Screener"):
 
     for ticker in data.columns:
         try:
+            st.write(f"⏳ Verificando {ticker}...", data[ticker].tail())
             rs = calc_rs_score(data[ticker], benchmark)
+            st.write(f"📈 RS calculado para {ticker}:", rs.tail())
             score = rs.iloc[-1]
             if pd.isna(score):
                 failed_tickers.append(ticker)
