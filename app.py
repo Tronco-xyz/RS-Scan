@@ -69,7 +69,7 @@ if st.button("🔍 Ejecutar Screener"):
     st.write("Datos de los tickers:", data.shape)
     st.write("Tickers descargados:", list(data.columns))
 
-    benchmark = benchmark_data
+    benchmark = benchmark_data.squeeze()
 
     def calc_rs_score(stock, benchmark):
         perf_63 = stock / stock.shift(63)
