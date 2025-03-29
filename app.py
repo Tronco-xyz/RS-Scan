@@ -54,8 +54,9 @@ except Exception as e:
 
 st.write("Tickers descargados:", list(data.columns))
 
-# --- Función de cálculo del RS Score ---
+# --- Función de cálculo del RS Score con trazas ---
 def calc_rs_score(stock: pd.Series, benchmark: pd.Series):
+    st.write("🧮 Cálculo iniciado...")
     perf_stock = (
         0.4 * (stock / stock.shift(63)) +
         0.2 * (stock / stock.shift(126)) +
@@ -68,10 +69,11 @@ def calc_rs_score(stock: pd.Series, benchmark: pd.Series):
         0.2 * (benchmark / benchmark.shift(189)) +
         0.2 * (benchmark / benchmark.shift(252))
     )
+    st.write("📊 Performance calculado")
     rs_score = (perf_stock / perf_bench) * 100
-    rs_score = rs_score.iloc[252:]  # ignorar los primeros valores incompletos
-    rs_score = rs_score.dropna()
-    st.write("📈 RS Score generado:", rs_score.tail())
+    st.write("📈 RS bruto:", rs_score.tail())
+    rs_score = rs_score.iloc[252:].dropna()
+    st.write("✅ RS limpio:", rs_score.tail())
     return rs_score
 
 # --- Procesar cada ticker ---
@@ -127,7 +129,7 @@ for ticker in data.columns:
         st.warning(f"No se pudo calcular RS para {ticker}: {e}")
         failed_tickers.append(ticker)
 
-# --- Construir DataFrame de resultados ---
+# --- Mostrar resultados ---
 if valid_scores:
     df_result = pd.DataFrame({
         "Ticker": list(valid_scores.keys()),
@@ -148,3 +150,4 @@ if valid_scores:
 else:
     st.warning("No se pudo calcular el RS Rating para ningún ticker. Revisa los datos descargados.")
     st.write("❌ Tickers fallidos:", failed_tickers)
+
