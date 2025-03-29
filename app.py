@@ -129,4 +129,3 @@ if st.button("🔍 Ejecutar Screener"):
 
     csv = df_rs.to_csv().encode("utf-8")
     st.download_button("📥 Descargar CSV completo", data=csv, file_name="rs_rating_screener.csv", mime="text/csv")
-
