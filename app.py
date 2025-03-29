@@ -43,14 +43,23 @@ if st.button("🔍 Ejecutar Screener"):
             st.error("No se pudieron descargar datos del resto de los tickers.")
             st.stop()
 
+        # ✅ Manejo robusto de los datos descargados
         if isinstance(data_download.columns, pd.MultiIndex):
-            data = data_download["Adj Close"]
-        elif "Adj Close" in data_download.columns:
-            data = data_download["Adj Close"]
+            if "Adj Close" in data_download.columns.levels[0]:
+                data = data_download["Adj Close"]
+            else:
+                st.error("No se encontró 'Adj Close' en los datos descargados.")
+                st.stop()
+        elif isinstance(data_download, pd.DataFrame):
+            if "Adj Close" in data_download.columns:
+                data = data_download["Adj Close"]
+            else:
+                st.error("'Adj Close' no está en columnas simples del DataFrame.")
+                st.stop()
         elif isinstance(data_download, pd.Series):
             data = data_download.to_frame(name=all_tickers[0])
         else:
-            st.error("Los datos descargados no tienen formato esperado ('Adj Close').")
+            st.error("Formato de datos inesperado al descargar tickers.")
             st.stop()
 
     except Exception as e:
